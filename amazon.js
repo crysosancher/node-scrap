@@ -1,60 +1,29 @@
-const puppeteer = require("puppeteer");
+const axios = require("axios");
 const cheerio = require("cheerio");
-const cronjob = require("cron").CronJob;
-const nodemailer = require("nodemailer");
-const url =
-  "https://www.amazon.in/s?k=shoe&crid=Y9U1OHNHT8IM&sprefix=shoe%2Caps%2C279&ref=nb_sb_noss_2";
- let browser; 
-async function getData() {
- browser = await puppeteer.launch();
-  const page = await browser.newPage();
-  await page.setViewport({ width: 1600, height: 900 });
-  await page.goto(url, { waitUntil: "networkidle0" });
-  return page;
-}
-async function checkPrice(page) {
-  await page.reload({ waitUntil: "networkidle0" });
-  let html = await page.evaluate(() => {
-    return document.getElementsByClassName('s-main-slot s-result-list s-search-results sg-row')[0].children
-    //console.log(document.body.getElementsByClassName('s-main-slot s-result-list s-search-results sg-row')[0].innerHTML)
-  });
-  console.log(typeof html);
-  for(x of html){
-    console.log(x);
-  }
-//  const $ = cheerio.load(html);
 
-//   const price=[];
-//   $(".a-price-whole", html).each(function () {
-//     let pricegandu = $(this).text();
-//     price.push(pricegandu);
-//   });
-//   console.log(price.length);
+const fetchShelves = async () => {
+   try {
+       const response = await axios.get('https://www.amazon.com/s?k=shoe&crid=3SZVCWHCAQBKS&sprefix=sh%2Caps%2C426&ref=nb_sb_noss');
 
-//   const products=[];
-//   $("h5 .a-size-base-plus", html).each(function () {
-// 	let name = $(this).text();
-// 	 products.push(name);
-//   });
-// 	console.log(products.length);
-//   const productDesciption = [];
-//   $('h2 .a-size-base-plus',html).each(function (){
-//     let desc = $(this).text();
-//     productDesciption.push(desc);
-//   })
-//  console.log('product description = ',productDesciption.length);
-// const img=[];
-//   $(".s-image", html).each(function () {
-//     let imageurl = $(this).attr('src');
-//     img.push(imageurl);
-//   });
-//   console.log(img.length)
+       const html = response.data;
 
- }
+       const $ = cheerio.load(html);
 
-async function main() {
-  const page = await getData();
-  await checkPrice(page);
-  await browser.close();
-}
-main();
+       const shelves = [];
+
+ $('div.sg-col-4-of-12.s-result-item.s-asin.sg-col-4-of-16.sg-col.sg-col-4-of-20').each((_idx, el) => {
+           const shelf = $(el)
+           const title = shelf.find('span.a-size-base-plus.a-color-base.a-text-normal').text()
+           const price = shelf.find('span.a-offscreen').text()
+           const imgUrl = shelf.find('img.s-image').attr('src')
+
+           shelves.push({title: title, price: price,imgUrl: imgUrl})
+       });
+
+       return shelves;
+   } catch (error) {
+       throw error;
+   }
+};
+
+fetchShelves().then((shelves) => console.log(shelves));
