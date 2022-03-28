@@ -4,8 +4,9 @@ import fs from "fs";
  
 const getData = async (searchTerm) => {
   // Send GET Request
+  //https://www.amazon.in/s?k=headphones&page=2
   const response = await (
-    await axios.get(`https://www.amazon.in/s?k=${searchTerm}`, {
+    await axios.get(`https://www.amazon.in/s?k=${searchTerm}&page=1`, {
       headers: {
         "User-Agent":
           "Mozilla/5.0 (Linux; Android 5.1; AFTS Build/LMY47O) AppleWebKit/537.36 (KHTML, like Gecko) Version/4.0 Chrome/41.99900.2250.0242 Safari/537.36",
